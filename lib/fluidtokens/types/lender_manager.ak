@@ -53,6 +53,7 @@ pub type LMLiquidateWithdrawRedeemer {
   configRefInputIndex: Int,
   lenderBondInputIndexes: List<Int>,
   lenderBondAssetNames: List<ByteArray>,
+  assetOutputIndexes: List<Int>,
 }
 
 pub type LMCompoundWithdrawRedeemer {
@@ -67,6 +68,7 @@ pub type LMLiquidateAndPayInAdvanceWithdrawRedeemer {
   lenderBondInputIndexes: List<Int>,
   lenderBondAssetNames: List<ByteArray>,
   principalAndCollateralOracleRefInputIndexes: List<(Int, Int)>,
+  assetOutputIndexes: List<Int>,
 }
 
 pub type LMLiquidateAndConvertActionWithdrawRedeemer {

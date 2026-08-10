@@ -28,13 +28,3 @@ pub type AssetManagerWithdrawRedeemer {
   configRefInputIndex: Int,
   ownerAssetInputIndexes: List<Int>,
 }
-
-pub type RepaymentAction {
-  WithdrawWithToken { tokenOutputIndex: Int }
-  WithdrawWithHash
-}
-
-pub type RepaymentWithdrawRedeemer {
-  configRefInputIndex: Int,
-  actionsForEachInput: List<(RepaymentAction, ByteArray)>,
-}

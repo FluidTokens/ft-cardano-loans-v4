@@ -98,7 +98,11 @@ validator actionValidator(
           let lenderBondIndex =
             safe_list_at(redeemer.lenderBondInputIndexes, index)
           let lenderBondInput = safe_list_at(lenderBondInputs, lenderBondIndex)
-          let assetOutput = safe_list_at(assetOutputs, index)
+          let assetOutput =
+            safe_list_at(
+              assetOutputs,
+              safe_list_at(redeemer.assetOutputIndexes, index),
+            )
           let lenderBondOutput =
             safe_list_at(lenderBondOutputs, lenderBondIndex)
           let collateralOracleRefInput =
@@ -218,6 +222,8 @@ validator actionValidator(
       )
 
     and {
+      //No duplicates in the redeemer output indexes to avoid double satisfaction attacks
+      list.unique(redeemer.assetOutputIndexes) == redeemer.assetOutputIndexes,
       //No asset input should be spent, so asset_manager withdraw script should not be in the tx
       list.find(
         self.withdrawals,
