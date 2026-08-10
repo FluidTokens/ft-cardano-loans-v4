@@ -1,4 +1,4 @@
-# FluidTokens Lending V3
+# FluidTokens Lending V4
 
 This repo contains the official smart contracts for the lending platform of FluidTokens.
 The logic is thought to be highly customizable, as the same contracts may be used for different flavours of lending.
@@ -39,6 +39,7 @@ The following features are supported:
 * Custom field to explain what a particular repayment is referring to
 * Automatic liquidations and compounding (see next section)
 * Lenders can sell their positions to compatible pools to receive the liquidity back when needed
+* Borrowers can be locked so they cannot transfer their loan position to anyone else
 
 ## Lending and borrowing
 * Pools, requests and loans are all identified by unique NFTs.
