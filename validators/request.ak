@@ -18,6 +18,7 @@ use fluidtokens/constants
 use fluidtokens/finance.{
   get_collateral_amount, get_min_principal_for_collateral_with_oracles,
   get_min_principal_for_collateral_without_oracles,
+  is_valid_installment_loan_params,
 }
 use fluidtokens/oracle.{retrieve_oracle_data}
 use fluidtokens/types/general.{
@@ -361,6 +362,11 @@ fn check_lend(
       )
     }
   and {
+    is_valid_installment_loan_params(
+      datum.commonData.repaymentMode,
+      datum.commonData.totalInstallments,
+      datum.commonData.installmentPeriod,
+    ),
     or {
       datum.permissionedConditionScriptHash == constants.no_permissioned_condition,
       {

@@ -18,10 +18,28 @@ fn rational_safe_div(r1: rational.Rational, r2: rational.Rational) -> Rational {
 }
 
 fn rational_pow(r: rational.Rational, exponent: Int) -> Rational {
-  if exponent == 1 {
+  if exponent <= 0 {
+    fail @"rational_pow requires a positive exponent"
+  } else if exponent == 1 {
     r
   } else {
     rational.mul(r, rational_pow(r, exponent - 1))
+  }
+}
+
+// installment-based modes require totalInstallments >= 1 and installmentPeriod >= 1;
+// otherwise remaining debt and installment math divide by zero or report zero debt while principal remains.
+pub fn is_valid_installment_loan_params(
+  repaymentMode: RepaymentMode,
+  totalInstallments: Int,
+  installmentPeriod: Int,
+) -> Bool {
+  when repaymentMode is {
+    PerpetualLoan { .. } -> True
+    InterestOnRemainingPrincipal { .. } ->
+      totalInstallments >= 1 && installmentPeriod >= 1
+    PrincipalAndInterestOnInstallments ->
+      totalInstallments >= 1 && installmentPeriod >= 1
   }
 }
 
