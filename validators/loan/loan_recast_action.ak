@@ -204,8 +204,8 @@ validator loan_recast_action(
           ),
           or {
             and {
-              //If principal becomes 0, then the loan is closed (there can't be outstanding interest to pay)
-              principalAfterRecasting == 0,
+              //If principal becomes 0 or less, then the loan is closed (there can't be outstanding interest to pay)
+              principalAfterRecasting <= 0,
               quantity_of(self.mint, loanPolicyId, inputAction.loanId) == -1,
             },
             and {
@@ -254,7 +254,9 @@ validator loan_recast_action(
                                 builtin.i_data(newRepaidInstallments),
                                 builtin.cons_list(
                                   builtin.i_data(
-                                    datum.interestRate * newTotalInstallments / datum.totalInstallments,
+                                    (
+                                      datum.interestRate * newTotalInstallments + datum.totalInstallments - 1
+                                    ) / datum.totalInstallments,
                                   ),
                                   builtin.cons_list(
                                     builtin.i_data(newTotalInstallments),
