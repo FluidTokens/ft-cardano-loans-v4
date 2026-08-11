@@ -125,12 +125,16 @@ validator loan_recast_action(
 
               let r = 1 + interestPerInstallment
 
-              let rToTheT = pow(r, datum.repaidInstallments)
-
               let remainingPrincipalToPay =
-                datum.principalAmount * rToTheT - a * ( rToTheT - 1 ) / (
-                  r - 1
-                )
+                if r > 0 {
+                  let rToTheT = pow(r, datum.repaidInstallments)
+
+                  datum.principalAmount * rToTheT - a * ( rToTheT - 1 ) / (
+                    r - 1
+                  )
+                } else {
+                  datum.principalAmount - datum.repaidInstallments * a
+                }
 
               remainingPrincipalToPay - inputAction.amountPaid
             }
