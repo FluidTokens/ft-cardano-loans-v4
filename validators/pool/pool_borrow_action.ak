@@ -16,6 +16,7 @@ use fluidtokens/finance.{
 use fluidtokens/oracle.{retrieve_oracle_data}
 use fluidtokens/types/general.{
   Asset, CardanoSignature, CardanoSpendScript, CollateralAsset, Liquidation,
+  PerpetualLoan,
 }
 use fluidtokens/types/loan.{LoanDatum}
 use fluidtokens/types/locked_borrower_manager.{LockedBorrowerManagerDatum}
@@ -72,6 +73,13 @@ validator pool_borrow_action(
         Script(poolPolicyId),
         smartTokensSpendScriptHash,
       )
+    let loanOutputs =
+      get_outputs_to_smart_credential(
+        outputs,
+        Script(loanSpendScriptHash),
+        Script(loanPolicyId),
+        smartTokensSpendScriptHash,
+      )
     //As we loop through the inputs we DO NOT need to ensure that the number of actions is equal to the number of inputs
     utils.indexed_all(
       poolInputs,
@@ -90,16 +98,7 @@ validator pool_borrow_action(
           permissionedConditionWithdrawIndex,
         } = safe_list_at(redeemer.actionsForEachInput, index)
         let inputUtxoId = utils.hash_output_ref(poolInput.output_reference)
-        let loanOutput =
-          safe_list_at(
-            get_outputs_to_smart_credential(
-              outputs,
-              Script(loanSpendScriptHash),
-              Script(loanPolicyId),
-              smartTokensSpendScriptHash,
-            ),
-            index,
-          )
+        let loanOutput = safe_list_at(loanOutputs, index)
         let outputWithLenderToken =
           safe_list_at(outputs, outputWithLenderTokenIndex)
         let outputWithBorrowerToken =
@@ -111,7 +110,10 @@ validator pool_borrow_action(
             safe_list_at(poolDatum.minCollateral, chosenCollateralIndex),
             safe_list_at(poolDatum.minCollateralDivider, chosenCollateralIndex),
           )
-        let isLoanOutputValid =
+
+        //common data
+        let cd = poolDatum.commonData
+        let minNeededCollateral =
           if poolDatum.dynamicCollateralPrice {
             let collateralOracleRefInput =
               safe_list_at(
@@ -140,47 +142,37 @@ validator pool_borrow_action(
                 redeemers,
                 validFrom,
                 validTo,
-                poolDatum.commonData.principalOracleAsset.policyId,
-                poolDatum.commonData.principalOracleAsset.assetName,
-                poolDatum.commonData.principalAsset.policyId,
-                Some(poolDatum.commonData.principalAsset.assetName),
+                cd.principalOracleAsset.policyId,
+                cd.principalOracleAsset.assetName,
+                cd.principalAsset.policyId,
+                Some(cd.principalAsset.assetName),
               )
-            validate_output_to_loan(
-              loanOutput,
-              loanPolicyId,
-              loanSpendScriptHash,
-              poolDatum,
+            get_needed_collateral_with_oracles(
               wantedPrincipalAmount,
-              chosenCollateral,
-              get_needed_collateral_with_oracles(
-                wantedPrincipalAmount,
-                minCollateral,
-                principalOraclePriceFeed,
-                collateralOraclePriceFeed,
-              ),
-              inputUtxoId,
-              validTo,
-              borrowerAddress,
-              poolId,
+              minCollateral,
+              principalOraclePriceFeed,
+              collateralOraclePriceFeed,
             )
           } else {
-            validate_output_to_loan(
-              loanOutput,
-              loanPolicyId,
-              loanSpendScriptHash,
-              poolDatum,
+            get_needed_collateral_without_oracles(
               wantedPrincipalAmount,
-              chosenCollateral,
-              get_needed_collateral_without_oracles(
-                wantedPrincipalAmount,
-                minCollateral,
-              ),
-              inputUtxoId,
-              validTo,
-              borrowerAddress,
-              poolId,
+              minCollateral,
             )
           }
+        let isLoanOutputValid =
+          validate_output_to_loan(
+            loanOutput,
+            loanPolicyId,
+            loanSpendScriptHash,
+            poolDatum,
+            wantedPrincipalAmount,
+            chosenCollateral,
+            minNeededCollateral,
+            inputUtxoId,
+            validTo,
+            borrowerAddress,
+            poolId,
+          )
         and {
           wantedPrincipalAmount > 0,
           or {
@@ -205,7 +197,7 @@ validator pool_borrow_action(
             poolDatum.lenderBondInlineDatumHash,
             outputWithBorrowerToken,
             borrowerAddress,
-            poolDatum.commonData.borrowerBondDestinationScriptHash,
+            cd.borrowerBondDestinationScriptHash,
             poolInput.output_reference,
           ),
           //The pool must return with the remaining liquidity even if completely emptied.
@@ -239,33 +231,36 @@ fn validate_output_to_loan(
   borrowerAddress: Address,
   poolId: ByteArray,
 ) -> Bool {
+  let outputValue = output.value
   let containsEnoughCollateral =
     when chosenCollateral.maybeAssetName is {
       Some(chosenCollateralAssetName) ->
         quantity_of(
-          output.value,
+          outputValue,
           chosenCollateral.policyId,
           chosenCollateralAssetName,
         ) >= minNeededCollateralAmount
       None ->
-        quantity_of_policy_id(output.value, chosenCollateral.policyId) >= minNeededCollateralAmount
+        quantity_of_policy_id(outputValue, chosenCollateral.policyId) >= minNeededCollateralAmount
     }
 
-  let containsLoanNFT = quantity_of(output.value, loanPolicyId, loanId) == 1
+  let containsLoanNFT = quantity_of(outputValue, loanPolicyId, loanId) == 1
   expect InlineDatum(outputDatum) = output.datum
+  //common data
+  let cd = poolDatum.commonData
   let newDatum =
     LoanDatum {
-      principalAsset: poolDatum.commonData.principalAsset,
-      principalOracleAsset: poolDatum.commonData.principalOracleAsset,
-      interestRate: poolDatum.commonData.interestRate,
-      installmentPeriod: poolDatum.commonData.installmentPeriod,
-      initialGracePeriod: poolDatum.commonData.initialGracePeriod,
-      liquidationMode: poolDatum.commonData.liquidationMode,
-      repaymentMode: poolDatum.commonData.repaymentMode,
-      repaymentTimeWindow: poolDatum.commonData.repaymentTimeWindow,
-      penaltyFeeForLateRepayment: poolDatum.commonData.penaltyFeeForLateRepayment,
-      repaymentReceipts: poolDatum.commonData.repaymentReceipts,
-      totalInstallments: poolDatum.commonData.totalInstallments,
+      principalAsset: cd.principalAsset,
+      principalOracleAsset: cd.principalOracleAsset,
+      interestRate: cd.interestRate,
+      installmentPeriod: cd.installmentPeriod,
+      initialGracePeriod: cd.initialGracePeriod,
+      liquidationMode: cd.liquidationMode,
+      repaymentMode: cd.repaymentMode,
+      repaymentTimeWindow: cd.repaymentTimeWindow,
+      penaltyFeeForLateRepayment: cd.penaltyFeeForLateRepayment,
+      repaymentReceipts: cd.repaymentReceipts,
+      totalInstallments: cd.totalInstallments,
       originId: bytearray.concat("POOL", poolId),
       collateral: chosenCollateral,
       principalAmount: wantedPrincipalAmount,
@@ -280,8 +275,14 @@ fn validate_output_to_loan(
         newDatum.collateral.oracleTokenAsset != constants.no_oracle_token_asset
       _ -> True
     }
+
+  let isInstallmentCountValid =
+    when newDatum.repaymentMode is {
+      PerpetualLoan { .. } -> True
+      _ -> newDatum.totalInstallments > 0
+    }
   let isDatumCorrect =
-    builtin.equals_data(outputDatum, newDatum) && isLiquidationCorrectlySet
+    builtin.equals_data(outputDatum, newDatum) && isLiquidationCorrectlySet && isInstallmentCountValid
 
   let correctDestination =
     if is_output_to_spend_validator(output, loanSpendScriptHash) {
@@ -291,7 +292,7 @@ fn validate_output_to_loan(
       True
     }
   let dosProtection =
-    length(flatten(output.value)) == when chosenCollateral.maybeAssetName is {
+    length(flatten(outputValue)) == when chosenCollateral.maybeAssetName is {
       Some(_chosenCollateralAssetName) ->
         if chosenCollateral.policyId == ada_policy_id {
           2
@@ -299,7 +300,7 @@ fn validate_output_to_loan(
           3
         }
       None ->
-        asset_names_number_of_policy_id(output.value, chosenCollateral.policyId) + 2
+        asset_names_number_of_policy_id(outputValue, chosenCollateral.policyId) + 2
     }
   and {
     correctDestination,
