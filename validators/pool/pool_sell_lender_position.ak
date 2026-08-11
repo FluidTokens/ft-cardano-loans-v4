@@ -242,6 +242,8 @@ fn is_loan_compatible_with_pool(
   reference_inputs: List<Input>,
   redeemers: Pairs<ScriptPurpose, Redeemer>,
 ) {
+  //common data
+  let cd = poolDatum.commonData
   let poolCollateral =
     safe_list_at(poolDatum.collateralOptions, collateralIndex)
   expect Some(minCollateral) =
@@ -276,10 +278,10 @@ fn is_loan_compatible_with_pool(
           redeemers,
           validFrom,
           validTo,
-          poolDatum.commonData.principalOracleAsset.policyId,
-          poolDatum.commonData.principalOracleAsset.assetName,
-          poolDatum.commonData.principalAsset.policyId,
-          Some(poolDatum.commonData.principalAsset.assetName),
+          cd.principalOracleAsset.policyId,
+          cd.principalOracleAsset.assetName,
+          cd.principalAsset.policyId,
+          Some(cd.principalAsset.assetName),
         )
       get_needed_collateral_with_oracles(
         loanDatum.principalAmount,
@@ -309,7 +311,7 @@ fn is_loan_compatible_with_pool(
         expect Some(interestRateAsRational) =
           rational.new(loanDatum.interestRate, 10000)
         expect Some(poolInterestRateAsRational) =
-          rational.new(poolDatum.commonData.interestRate, 10000)
+          rational.new(cd.interestRate, 10000)
         //currentAPY = apyIncreaseLinearCoefficient * passedHoursSoFar + interestRate
         let currentLoanPerpetualAPY =
           rational.add(
@@ -327,18 +329,18 @@ fn is_loan_compatible_with_pool(
           _ -> False
         }
       }
-      _ -> loanDatum.interestRate >= poolDatum.commonData.interestRate
+      _ -> loanDatum.interestRate >= cd.interestRate
     },
-    loanDatum.totalInstallments == poolDatum.commonData.totalInstallments,
-    loanDatum.principalAsset == poolDatum.commonData.principalAsset,
-    loanDatum.principalOracleAsset == poolDatum.commonData.principalOracleAsset,
-    loanDatum.installmentPeriod == poolDatum.commonData.installmentPeriod,
-    loanDatum.initialGracePeriod == poolDatum.commonData.initialGracePeriod,
-    loanDatum.liquidationMode == poolDatum.commonData.liquidationMode,
-    loanDatum.repaymentMode == poolDatum.commonData.repaymentMode,
-    loanDatum.repaymentTimeWindow == poolDatum.commonData.repaymentTimeWindow,
-    loanDatum.penaltyFeeForLateRepayment == poolDatum.commonData.penaltyFeeForLateRepayment,
-    loanDatum.repaymentReceipts == poolDatum.commonData.repaymentReceipts,
+    loanDatum.totalInstallments == cd.totalInstallments,
+    loanDatum.principalAsset == cd.principalAsset,
+    loanDatum.principalOracleAsset == cd.principalOracleAsset,
+    loanDatum.installmentPeriod == cd.installmentPeriod,
+    loanDatum.initialGracePeriod == cd.initialGracePeriod,
+    loanDatum.liquidationMode == cd.liquidationMode,
+    loanDatum.repaymentMode == cd.repaymentMode,
+    loanDatum.repaymentTimeWindow == cd.repaymentTimeWindow,
+    loanDatum.penaltyFeeForLateRepayment == cd.penaltyFeeForLateRepayment,
+    loanDatum.repaymentReceipts == cd.repaymentReceipts,
     //The pool must support the loan collateral
     poolCollateral == loanDatum.collateral,
     //To have the correct LTV, the collateral in the loan must be >= than the one required by the pool
