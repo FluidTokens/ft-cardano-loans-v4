@@ -87,7 +87,7 @@ validator dutch_auction(
                   datum.borrowerAssetManagerDatum == None,
                   validTo < datum.startDate,
                 },
-                currentPrice <= datum.minPriceToCancel,
+                currentPrice < datum.minPriceToCancel,
               },
             }
           Buy -> {
@@ -102,6 +102,7 @@ validator dutch_auction(
               utils.safe_list_at(asset_manager_outputs, index * 2)
             and {
               datum.startDate <= validFrom,
+              currentPrice >= datum.minPriceToCancel,
               if datum.borrowerAssetManagerDatum != None && currentPrice > datum.debtAmount {
                 expect Some(borrowerAssetManagerDatum) =
                   datum.borrowerAssetManagerDatum
