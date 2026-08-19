@@ -26,5 +26,4 @@ pub type AssetManagerMintRedeemer {
 
 pub type AssetManagerWithdrawRedeemer {
   configRefInputIndex: Int,
-  ownerAssetInputIndexes: List<Int>,
 }

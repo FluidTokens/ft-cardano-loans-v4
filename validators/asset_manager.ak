@@ -150,23 +150,23 @@ validator assetManager(
         credential,
         smartTokensSpendScriptHash,
       )
-    utils.indexed_all(
+    list.all(
       assetInputs,
-      fn(index, input) {
+      fn(input) {
         expect InlineDatum(inputDatum) = input.output.datum
         expect datum: AssetManagerDatum = inputDatum
         when datum is {
-          AssetManagerDatumWithToken { ownerAsset, .. } -> {
-            let ownerAssetInputIndex =
-              safe_list_at(redeemer.ownerAssetInputIndexes, index)
-            let ownerAssetInput =
-              safe_list_at(self.inputs, ownerAssetInputIndex)
-            quantity_of(
-              ownerAssetInput.output.value,
-              ownerAsset.policyId,
-              ownerAsset.assetName,
-            ) > 0
-          }
+          AssetManagerDatumWithToken { ownerAsset, .. } ->
+            list.any(
+              self.inputs,
+              fn(input) {
+                quantity_of(
+                  input.output.value,
+                  ownerAsset.policyId,
+                  ownerAsset.assetName,
+                ) > 0
+              },
+            )
           AssetManagerDatumWithHash { ownerAuth, .. } ->
             authorize_action(
               create_auth(

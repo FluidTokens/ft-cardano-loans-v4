@@ -22,7 +22,7 @@ use fluidtokens/finance.{
 use fluidtokens/oracle.{retrieve_oracle_data}
 use fluidtokens/types/general.{
   Asset, AuthorizationMethod, CardanoSignature, CardanoSpendScript,
-  CollateralAsset, Liquidation,
+  CollateralAsset, Liquidation, PerpetualLoan,
 }
 use fluidtokens/types/loan.{LoanDatum}
 use fluidtokens/types/locked_borrower_manager.{LockedBorrowerManagerDatum}
@@ -539,8 +539,13 @@ fn validate_output_to_loan(
         newDatum.collateral.oracleTokenAsset != constants.no_oracle_token_asset
       _ -> True
     }
+  let isInstallmentCountValid =
+    when newDatum.repaymentMode is {
+      PerpetualLoan { .. } -> True
+      _ -> newDatum.totalInstallments > 0
+    }
   let isDatumCorrect =
-    builtin.equals_data(outputDatum, newDatum) && isLiquidationCorrectlySet
+    builtin.equals_data(outputDatum, newDatum) && isLiquidationCorrectlySet && isInstallmentCountValid
 
   let correctDestination =
     if is_output_to_spend_validator(output, loanSpendScriptHash) {
