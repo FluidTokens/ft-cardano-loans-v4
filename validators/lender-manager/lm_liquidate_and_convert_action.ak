@@ -167,8 +167,18 @@ validator actionValidator(
             }
           expect InlineDatum(minswapPoolRefInputDatum) =
             minswapPoolRefInput.output.datum
-          expect minswap_types.PoolDatum { asset_a, asset_b, .. } =
+          expect asset_a: minswap_types.Asset =
             minswapPoolRefInputDatum
+              |> builtin.unconstr_fields
+              |> builtin.tail_list
+              |> builtin.head_list
+
+          expect asset_b: minswap_types.Asset =
+            minswapPoolRefInputDatum
+              |> builtin.unconstr_fields
+              |> builtin.tail_list
+              |> builtin.tail_list
+              |> builtin.head_list
           let lpABDirection =
             asset_a == minswap_conversions.to_minswap_asset(collateralAsset)
           let lpAssetName =
