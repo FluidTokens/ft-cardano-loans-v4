@@ -22,6 +22,13 @@ use smart_tokens/utils.{
   get_inputs_from_smart_credential, get_outputs_to_smart_credential,
 } as st_utils
 
+/// ADA overhead a Minswap V2 order UTxO must carry on top of the swapped
+/// collateral, so that a batcher will actually pick the order up:
+///   2_000_000  max_batcher_fee paid to the batcher
+/// + 2_000_000  min-ADA for the order's own success/refund output
+/// Both halves must be present: raising only the fee cap leaves the order short.
+const minswap_order_overhead: Int = 4_000_000
+
 validator actionValidator(
   configNFTPolicyId: ByteArray,
   configNFTAssetName: ByteArray,
@@ -270,7 +277,7 @@ validator actionValidator(
                   asset_name: lpAssetName,
                 },
                 step: orderType,
-                max_batcher_fee: 700000,
+                max_batcher_fee: 2_000_000,
                 expiry_setting_opt: None,
               },
             )
@@ -281,7 +288,7 @@ validator actionValidator(
                 minswapOrderOutput.value,
                 collateralPolicyId,
                 collateralAssetName,
-              ) == swappableCollateralAmount
+              ) == swappableCollateralAmount + minswap_order_overhead
             } else {
               and {
                 quantity_of(
@@ -289,7 +296,7 @@ validator actionValidator(
                   collateralPolicyId,
                   collateralAssetName,
                 ) == swappableCollateralAmount,
-                quantity_of(minswapOrderOutput.value, "", "") == 2800000,
+                quantity_of(minswapOrderOutput.value, "", "") == minswap_order_overhead,
               }
             }
 
