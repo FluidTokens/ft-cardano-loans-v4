@@ -22,6 +22,29 @@ use smart_tokens/utils.{
   get_inputs_from_smart_credential, get_outputs_to_smart_credential,
 } as st_utils
 
+/// Minimum ADA a Minswap V2 order UTxO must carry on top of the swapped
+/// collateral, so that a batcher will actually pick the order up:
+///
+///   2_000_000  the batcher fee, deducted from the order's own lovelace
+/// + 2_000_000  what must survive that deduction for the output to be a
+///              valid UTxO
+///   ---------
+///   4_000_000
+///
+/// Sized from the batcher fee ACTUALLY charged on chain, not from the cap
+/// advertised on orders: decoding `orders_fee` out of 197 Minswap V2 batching
+/// redeemers (211 orders, epoch 653) gives 2_000_000 as the min, median and
+/// max — every order, without exception. `max_batcher_fee` below is set to
+/// that same figure deliberately. It is a ceiling the batcher may charge up
+/// to, and in 188 of 188 single-order batches the batcher charged all of it,
+/// so a more generous ceiling buys no goodwill and is simply paid.
+///
+/// Both halves must be present. Raising only the fee cap leaves nothing behind
+/// for the output to exist on; raising only the ADA leaves the batcher
+/// unauthorised to take its fee. Either way the order is never batched, which
+/// is silent — no failure is reported, the order simply sits.
+const minswap_order_overhead: Int = 4_000_000
+
 validator actionValidator(
   configNFTPolicyId: ByteArray,
   configNFTAssetName: ByteArray,
@@ -270,18 +293,28 @@ validator actionValidator(
                   asset_name: lpAssetName,
                 },
                 step: orderType,
-                max_batcher_fee: 700000,
+                max_batcher_fee: 2_000_000,
                 expiry_setting_opt: None,
               },
             )
 
+          // The ADA overhead is a FLOOR, not an equality: if Cardano's
+          // min-UTxO rises by protocol parameter, a bot can top the order up
+          // and it stays batchable, instead of every convert stranding until
+          // this script is redeployed. Surplus ADA is safe — Minswap swaps only
+          // `swap_amount` (pinned in the datum above) and returns the remainder
+          // to success_receiver, which is the lender's asset manager.
+          //
+          // The COLLATERAL amount stays an equality. Minswap's optimised swap
+          // path has strict requirements on the order value's asset entries, so
+          // extra collateral is not simply harmless residue the way extra ADA is.
           let correctOrderValue =
             if collateralPolicyId == ada_policy_id {
               quantity_of(
                 minswapOrderOutput.value,
                 collateralPolicyId,
                 collateralAssetName,
-              ) == swappableCollateralAmount
+              ) >= swappableCollateralAmount + minswap_order_overhead
             } else {
               and {
                 quantity_of(
@@ -289,7 +322,7 @@ validator actionValidator(
                   collateralPolicyId,
                   collateralAssetName,
                 ) == swappableCollateralAmount,
-                quantity_of(minswapOrderOutput.value, "", "") == 2800000,
+                quantity_of(minswapOrderOutput.value, "", "") >= minswap_order_overhead,
               }
             }
 
