@@ -503,10 +503,44 @@ test order_with_old_batcher_fee_cap_is_rejected() {
   !run(build_tx(True, from_lovelace(swappable + overhead), 700_000))
 }
 
-/// Overpaying the overhead is refused too — the check is an equality, so the
-/// order's shape is exactly what a batcher can rely on.
-test ada_collateral_order_overfunded_is_rejected() {
-  !run(build_tx(True, from_lovelace(swappable + overhead + 1), 2_000_000))
+// ---------------------------------------------------------------------------
+// The overhead is a FLOOR. Overfunding is accepted on purpose: if min-UTxO
+// rises by protocol parameter, a bot can top the order up rather than every
+// convert stranding until this script is redeployed. The surplus is not lost —
+// Minswap swaps only `swap_amount` and returns the remainder to
+// success_receiver, the lender's asset manager.
+// ---------------------------------------------------------------------------
+
+test ada_collateral_order_overfunded_is_accepted() {
+  run(
+    build_tx(True, from_lovelace(swappable + overhead + 5_000_000), 2_000_000),
+  )
+}
+
+test token_collateral_order_overfunded_ada_is_accepted() {
+  run(
+    build_tx(
+      False,
+      from_lovelace(overhead + 5_000_000)
+        |> add(collateral_policy, collateral_name, swappable),
+      2_000_000,
+    ),
+  )
+}
+
+/// The collateral amount stays an EQUALITY even though the ADA is a floor:
+/// Minswap's optimised swap path has strict requirements on the order value's
+/// asset entries, so surplus collateral is not the harmless residue surplus
+/// ADA is.
+test token_collateral_order_with_excess_collateral_is_rejected() {
+  !run(
+    build_tx(
+      False,
+      from_lovelace(overhead)
+        |> add(collateral_policy, collateral_name, swappable + 1),
+      2_000_000,
+    ),
+  )
 }
 
 // ---------------------------------------------------------------------------
