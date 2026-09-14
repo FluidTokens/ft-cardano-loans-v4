@@ -30,4 +30,6 @@ pub type ConfigDatum {
   poolManagerSpendScriptHash: ByteArray,
   poolManagerPolicyId: ByteArray,
   lockedBorrowerManagerSpendScriptHash: ByteArray,
+  //Index 33: authorizes in-place updates to a pool's terms without burning/reminting its NFT
+  poolUpdateActionScriptHash: ByteArray,
 }
