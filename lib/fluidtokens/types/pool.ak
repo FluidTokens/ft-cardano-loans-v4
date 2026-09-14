@@ -83,6 +83,9 @@ pub type Action {
   SellLenderPosition
   //Bots can compound to the pool
   Compound
+  //Pool's owner can update the pool's terms in place, without burning/reminting its NFT,
+  //so outstanding loans (which reference this pool by its NFT asset name) can still compound
+  Update
 }
 
 pub type PoolWithdrawRedeemer {
@@ -149,4 +152,13 @@ pub type PoolSellLenderPositionActionWithdrawRedeemer {
 pub type PoolCompoundActionWithdrawRedeemer {
   configRefInputIndex: Int,
   actionsForEachInput: List<CompoundData>,
+}
+
+pub type UpdateData {
+  poolId: ByteArray,
+}
+
+pub type PoolUpdateActionWithdrawRedeemer {
+  configRefInputIndex: Int,
+  actionsForEachInput: List<UpdateData>,
 }
