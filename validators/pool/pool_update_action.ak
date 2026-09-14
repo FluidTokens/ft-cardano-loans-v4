@@ -60,8 +60,9 @@ validator pool_update_action(
           //name outstanding loans reference to compound back into it) never changes
           quantity_of(input.output.value, poolPolicyId, redeemerAction.poolId) == 1,
           quantity_of(output.value, poolPolicyId, redeemerAction.poolId) == 1,
-          //Value cannot change: an update edits terms, not liquidity
-          builtin.equals_data(input.output.value, output.value),
+          //Value is free to change (add or remove liquidity): this is gated by the same
+          //lenderAuth that can already fully drain the pool via Cancel, so it grants no
+          //new capability - it just avoids a full cancel+recreate for a liquidity change
           //Address cannot change
           builtin.equals_data(input.output.address, output.address),
           //The lending asset (and its oracle) must stay fixed: outstanding loans and
