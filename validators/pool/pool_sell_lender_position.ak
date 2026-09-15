@@ -3,6 +3,7 @@ use aiken/collection/dict
 use aiken/collection/list.{length}
 use aiken/crypto
 use aiken/interval.{Finite, Interval}
+use aiken/math
 use aiken/math/rational
 use cardano/address.{Address, Credential, Script}
 use cardano/assets.{Value, add, flatten, quantity_of}
@@ -12,11 +13,12 @@ use cardano/transaction.{
 use fluidtokens/constants
 use fluidtokens/finance.{
   get_needed_collateral_with_oracles, get_needed_collateral_without_oracles,
+  get_remaining_debt,
 }
 use fluidtokens/oracle.{retrieve_oracle_data}
 use fluidtokens/types/general.{
   InterestOnRemainingPrincipal, PerpetualLoan,
-  PrincipalAndInterestOnInstallments, RepaymentMode,
+  PrincipalAndInterestOnInstallments,
 }
 use fluidtokens/types/loan.{LoanDatum} as l
 use fluidtokens/types/pool.{
@@ -104,14 +106,11 @@ validator pool_sell_lender_position_action(
               expect loanDatum: LoanDatum = loanRefInputDatum
               expect InlineDatum(outputWithLenderTokenDatum) =
                 outputWithLenderToken.datum
-              //The value of the loan is the current borrowed principal
+              //The value of the loan is the current borrowed principal, net of any
+              //amount already settled (amortized principal paydown, or - for perpetual
+              //loans - a prepaid-interest credit that lowers the true settlement obligation)
               let loanValueInPrincipal =
-                get_loan_sellable_value(
-                  loanDatum.principalAmount,
-                  loanDatum.repaidInstallments,
-                  loanDatum.totalInstallments,
-                  loanDatum.repaymentMode,
-                )
+                get_loan_sellable_value(loanDatum, validTo)
 
               expect and {
                   //Lender bond input must have the lender bond
@@ -357,13 +356,11 @@ fn is_loan_compatible_with_pool(
   }
 }
 
-fn get_loan_sellable_value(
-  principalAmount: Int,
-  repaidInstallments: Int,
-  totalInstallments: Int,
-  repaymentMode: RepaymentMode,
-) {
-  when repaymentMode is {
+fn get_loan_sellable_value(loanDatum: LoanDatum, validTo: Int) {
+  let principalAmount = loanDatum.principalAmount
+  let repaidInstallments = loanDatum.repaidInstallments
+  let totalInstallments = loanDatum.totalInstallments
+  when loanDatum.repaymentMode is {
     InterestOnRemainingPrincipal { .. } -> {
       expect Some(principalInEachInstallment) =
         rational.new(principalAmount, totalInstallments)
@@ -392,6 +389,21 @@ fn get_loan_sellable_value(
         ),
       )
     }
-    PerpetualLoan { .. } -> principalAmount
+    PerpetualLoan { .. } -> {
+      expect Some(interestRateAsRational) =
+        rational.new(loanDatum.interestRate, 10000)
+      let remainingDebt =
+        get_remaining_debt(
+          loanDatum.repaymentMode,
+          rational.from_int(principalAmount),
+          interestRateAsRational,
+          totalInstallments,
+          repaidInstallments,
+          loanDatum.installmentPeriod,
+          loanDatum.initialGracePeriod,
+          validTo - loanDatum.lendDate,
+        )
+      math.clamp(remainingDebt, 0, principalAmount)
+    }
   }
 }
