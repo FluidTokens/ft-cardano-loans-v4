@@ -204,6 +204,8 @@ validator pool_sell_lender_position_action(
             poolDatum,
             poolInput.output.address,
             principalPaid,
+            poolPolicyId,
+            redeemerAction.poolId,
           ),
         } |> fn(result) { (result, newCountedLenderBonds) }
       },
@@ -221,6 +223,8 @@ fn validate_output_to_pool(
   datum: PoolDatum,
   poolInputAddress: Address,
   principalSpent: Int,
+  poolPolicyId: ByteArray,
+  poolId: ByteArray,
 ) {
   expect InlineDatum(outputDatum) = output.datum
   let expectedOutputValue =
@@ -236,6 +240,7 @@ fn validate_output_to_pool(
     expectedOutputValue == output.value,
     correctDestination,
     isDatumCorrect,
+    quantity_of(output.value, poolPolicyId, poolId) == 1,
   }
 }
 
