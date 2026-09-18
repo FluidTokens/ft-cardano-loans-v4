@@ -189,6 +189,8 @@ validator pool_sell_lender_position_action(
         let principalPaid = principalAmount - principalAmountAfterSelling
 
         and {
+          //This prevents a broken pool to extract the pool nft
+          poolPolicyId != poolDatum.commonData.principalAsset.policyId,
           quantity_of(
             poolInput.output.value,
             poolPolicyId,

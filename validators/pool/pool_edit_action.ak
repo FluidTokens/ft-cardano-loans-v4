@@ -56,6 +56,8 @@ validator pool_edit_action(
         expect outDatum: PoolDatum = outputDatum
 
         and {
+          //This prevents a broken pool to extract the pool nft
+          poolPolicyId != datum.commonData.principalAsset.policyId,
           //Pool NFT is never minted/burned by an update: the pool's identity (the asset
           //name outstanding loans reference to compound back into it) never changes
           quantity_of(input.output.value, poolPolicyId, redeemerAction.poolId) == 1,

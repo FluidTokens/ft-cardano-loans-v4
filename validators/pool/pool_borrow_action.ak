@@ -175,6 +175,8 @@ validator pool_borrow_action(
           )
         and {
           wantedPrincipalAmount > 0,
+          //This prevents a broken pool to extract the pool nft
+          poolPolicyId != poolDatum.commonData.principalAsset.policyId,
           or {
             poolDatum.permissionedConditionScriptHash == constants.no_permissioned_condition,
             {
