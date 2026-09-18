@@ -1,6 +1,7 @@
 use aiken/builtin
+use aiken/collection/dict
 use cardano/address.{Credential, Script}
-use cardano/assets.{quantity_of}
+use cardano/assets.{quantity_of, tokens}
 use cardano/transaction.{InlineDatum, Input, Output, Transaction}
 use fluidtokens/authorizer.{authorize_action, create_auth}
 use fluidtokens/types/pool.{EditActionWithdrawRedeemer, PoolDatum}
@@ -60,6 +61,7 @@ validator pool_edit_action(
           //name outstanding loans reference to compound back into it) never changes
           quantity_of(input.output.value, poolPolicyId, redeemerAction.poolId) == 1,
           quantity_of(output.value, poolPolicyId, redeemerAction.poolId) == 1,
+          dict.size(tokens(output.value, poolPolicyId)) == 1,
           //Value is free to change (add or remove liquidity): this is gated by the same
           //lenderAuth that can already fully drain the pool via Cancel, so it grants no
           //new capability - it just avoids a full cancel+recreate for a liquidity change
