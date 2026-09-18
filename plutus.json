@@ -6,7 +6,7 @@
     "plutusVersion": "v3",
     "compiler": {
       "name": "Aiken",
-      "version": "v1.1.17+c3a7fba"
+      "version": "v1.1.21+42babe5"
     },
     "license": "Apache-2.0"
   },
@@ -1621,7 +1621,7 @@
         {
           "title": "verification_keys",
           "schema": {
-            "$ref": "#/definitions/List$ByteArray"
+            "$ref": "#/definitions/List<ByteArray>"
           }
         },
         {
@@ -1682,7 +1682,7 @@
         {
           "title": "verification_keys",
           "schema": {
-            "$ref": "#/definitions/List$ByteArray"
+            "$ref": "#/definitions/List<ByteArray>"
           }
         },
         {
@@ -1740,7 +1740,7 @@
         {
           "title": "verification_keys",
           "schema": {
-            "$ref": "#/definitions/List$ByteArray"
+            "$ref": "#/definitions/List<ByteArray>"
           }
         },
         {
@@ -2673,115 +2673,115 @@
     "Int": {
       "dataType": "integer"
     },
-    "List$ByteArray": {
+    "List<ByteArray>": {
       "dataType": "list",
       "items": {
         "$ref": "#/definitions/ByteArray"
       }
     },
-    "List$Int": {
+    "List<Int>": {
       "dataType": "list",
       "items": {
         "$ref": "#/definitions/Int"
       }
     },
-    "List$Tuple$Int_Int": {
+    "List<Tuple<<Int,Int>>>": {
       "dataType": "list",
       "items": {
-        "$ref": "#/definitions/Tuple$Int_Int"
+        "$ref": "#/definitions/Tuple<<Int,Int>>"
       }
     },
-    "List$cardano/transaction/OutputReference": {
+    "List<cardano/transaction/OutputReference>": {
       "dataType": "list",
       "items": {
         "$ref": "#/definitions/cardano~1transaction~1OutputReference"
       }
     },
-    "List$conditions/pool_kyc_token/ComplianceToken": {
+    "List<conditions/pool_kyc_token/ComplianceToken>": {
       "dataType": "list",
       "items": {
         "$ref": "#/definitions/conditions~1pool_kyc_token~1ComplianceToken"
       }
     },
-    "List$fluidtokens/types/dutch_auction/DutchAuctionAction": {
+    "List<fluidtokens/types/dutch_auction/DutchAuctionAction>": {
       "dataType": "list",
       "items": {
         "$ref": "#/definitions/fluidtokens~1types~1dutch_auction~1DutchAuctionAction"
       }
     },
-    "List$fluidtokens/types/loan/ChangeCollateralData": {
+    "List<fluidtokens/types/loan/ChangeCollateralData>": {
       "dataType": "list",
       "items": {
         "$ref": "#/definitions/fluidtokens~1types~1loan~1ChangeCollateralData"
       }
     },
-    "List$fluidtokens/types/loan/ClaimData": {
+    "List<fluidtokens/types/loan/ClaimData>": {
       "dataType": "list",
       "items": {
         "$ref": "#/definitions/fluidtokens~1types~1loan~1ClaimData"
       }
     },
-    "List$fluidtokens/types/loan/RecastData": {
+    "List<fluidtokens/types/loan/RecastData>": {
       "dataType": "list",
       "items": {
         "$ref": "#/definitions/fluidtokens~1types~1loan~1RecastData"
       }
     },
-    "List$fluidtokens/types/loan/RepayData": {
+    "List<fluidtokens/types/loan/RepayData>": {
       "dataType": "list",
       "items": {
         "$ref": "#/definitions/fluidtokens~1types~1loan~1RepayData"
       }
     },
-    "List$fluidtokens/types/oracle/Signature": {
+    "List<fluidtokens/types/oracle/Signature>": {
       "dataType": "list",
       "items": {
         "$ref": "#/definitions/fluidtokens~1types~1oracle~1Signature"
       }
     },
-    "List$fluidtokens/types/pool/BorrowData": {
+    "List<fluidtokens/types/pool/BorrowData>": {
       "dataType": "list",
       "items": {
         "$ref": "#/definitions/fluidtokens~1types~1pool~1BorrowData"
       }
     },
-    "List$fluidtokens/types/pool/CancelData": {
+    "List<fluidtokens/types/pool/CancelData>": {
       "dataType": "list",
       "items": {
         "$ref": "#/definitions/fluidtokens~1types~1pool~1CancelData"
       }
     },
-    "List$fluidtokens/types/pool/CompoundData": {
+    "List<fluidtokens/types/pool/CompoundData>": {
       "dataType": "list",
       "items": {
         "$ref": "#/definitions/fluidtokens~1types~1pool~1CompoundData"
       }
     },
-    "List$fluidtokens/types/pool/EditData": {
+    "List<fluidtokens/types/pool/EditData>": {
       "dataType": "list",
       "items": {
         "$ref": "#/definitions/fluidtokens~1types~1pool~1EditData"
       }
     },
-    "List$fluidtokens/types/pool/SellLenderPositionData": {
+    "List<fluidtokens/types/pool/SellLenderPositionData>": {
       "dataType": "list",
       "items": {
         "$ref": "#/definitions/fluidtokens~1types~1pool~1SellLenderPositionData"
       }
     },
-    "List$fluidtokens/types/pool/SellingLenderBondInfo": {
+    "List<fluidtokens/types/pool/SellingLenderBondInfo>": {
       "dataType": "list",
       "items": {
         "$ref": "#/definitions/fluidtokens~1types~1pool~1SellingLenderBondInfo"
       }
     },
-    "List$fluidtokens/types/request/RequestAction": {
+    "List<fluidtokens/types/request/RequestAction>": {
       "dataType": "list",
       "items": {
         "$ref": "#/definitions/fluidtokens~1types~1request~1RequestAction"
       }
     },
-    "Option$cardano/address/StakeCredential": {
+    "Option<cardano/address/StakeCredential>": {
       "title": "Option",
       "anyOf": [
         {
@@ -2804,27 +2804,27 @@
         }
       ]
     },
-    "Pairs$cardano/assets/AssetName_Tuple$cardano/assets/PolicyId_Int": {
-      "title": "Pairs<AssetName, (PolicyId, Int)>",
-      "dataType": "map",
-      "keys": {
-        "$ref": "#/definitions/cardano~1assets~1AssetName"
-      },
-      "values": {
-        "$ref": "#/definitions/Tuple$cardano~1assets~1PolicyId_Int"
-      }
-    },
-    "Pairs$cardano/assets/AssetName_Tuple$cardano/assets/PolicyId_Int_ByteArray": {
+    "Pairs<cardano/assets/AssetName,Tuple<<cardano/assets/PolicyId,Int,ByteArray>>>": {
       "title": "Pairs<AssetName, (PolicyId, Int, ByteArray)>",
       "dataType": "map",
       "keys": {
         "$ref": "#/definitions/cardano~1assets~1AssetName"
       },
       "values": {
-        "$ref": "#/definitions/Tuple$cardano~1assets~1PolicyId_Int_ByteArray"
+        "$ref": "#/definitions/Tuple<<cardano~1assets~1PolicyId,Int,ByteArray>>"
       }
     },
-    "Tuple$Int_Int": {
+    "Pairs<cardano/assets/AssetName,Tuple<<cardano/assets/PolicyId,Int>>>": {
+      "title": "Pairs<AssetName, (PolicyId, Int)>",
+      "dataType": "map",
+      "keys": {
+        "$ref": "#/definitions/cardano~1assets~1AssetName"
+      },
+      "values": {
+        "$ref": "#/definitions/Tuple<<cardano~1assets~1PolicyId,Int>>"
+      }
+    },
+    "Tuple<<Int,Int>>": {
       "title": "Tuple",
       "dataType": "list",
       "items": [
@@ -2836,19 +2836,7 @@
         }
       ]
     },
-    "Tuple$cardano/assets/PolicyId_Int": {
-      "title": "Tuple",
-      "dataType": "list",
-      "items": [
-        {
-          "$ref": "#/definitions/cardano~1assets~1PolicyId"
-        },
-        {
-          "$ref": "#/definitions/Int"
-        }
-      ]
-    },
-    "Tuple$cardano/assets/PolicyId_Int_ByteArray": {
+    "Tuple<<cardano/assets/PolicyId,Int,ByteArray>>": {
       "title": "Tuple",
       "dataType": "list",
       "items": [
@@ -2860,6 +2848,18 @@
         },
         {
           "$ref": "#/definitions/ByteArray"
+        }
+      ]
+    },
+    "Tuple<<cardano/assets/PolicyId,Int>>": {
+      "title": "Tuple",
+      "dataType": "list",
+      "items": [
+        {
+          "$ref": "#/definitions/cardano~1assets~1PolicyId"
+        },
+        {
+          "$ref": "#/definitions/Int"
         }
       ]
     },
@@ -2879,7 +2879,7 @@
       "title": "VerificationKeyHash",
       "dataType": "bytes"
     },
-    "aiken/interval/IntervalBound$Int": {
+    "aiken/interval/IntervalBound<Int>": {
       "title": "IntervalBound",
       "description": "An interval bound, either inclusive or exclusive.",
       "anyOf": [
@@ -2890,7 +2890,7 @@
           "fields": [
             {
               "title": "bound_type",
-              "$ref": "#/definitions/aiken~1interval~1IntervalBoundType$Int"
+              "$ref": "#/definitions/aiken~1interval~1IntervalBoundType<Int>"
             },
             {
               "title": "is_inclusive",
@@ -2900,7 +2900,7 @@
         }
       ]
     },
-    "aiken/interval/IntervalBoundType$Int": {
+    "aiken/interval/IntervalBoundType<Int>": {
       "title": "IntervalBoundType",
       "description": "A type of interval bound. Where finite, a value of type `a` must be\n provided. `a` will typically be an `Int`, representing a number of seconds or\n milliseconds.",
       "anyOf": [
@@ -2938,7 +2938,7 @@
           "fields": [
             {
               "title": "inputRefs",
-              "$ref": "#/definitions/List$cardano~1transaction~1OutputReference"
+              "$ref": "#/definitions/List<cardano~1transaction~1OutputReference>"
             }
           ]
         }
@@ -2959,7 +2959,7 @@
             },
             {
               "title": "stake_credential",
-              "$ref": "#/definitions/Option$cardano~1address~1StakeCredential"
+              "$ref": "#/definitions/Option<cardano~1address~1StakeCredential>"
             }
           ]
         }
@@ -3096,11 +3096,11 @@
           "fields": [
             {
               "title": "lower_bound",
-              "$ref": "#/definitions/aiken~1interval~1IntervalBound$Int"
+              "$ref": "#/definitions/aiken~1interval~1IntervalBound<Int>"
             },
             {
               "title": "upper_bound",
-              "$ref": "#/definitions/aiken~1interval~1IntervalBound$Int"
+              "$ref": "#/definitions/aiken~1interval~1IntervalBound<Int>"
             }
           ]
         }
@@ -3144,7 +3144,7 @@
             },
             {
               "title": "complianceForEachInput",
-              "$ref": "#/definitions/List$conditions~1pool_kyc_token~1ComplianceToken"
+              "$ref": "#/definitions/List<conditions~1pool_kyc_token~1ComplianceToken>"
             }
           ]
         }
@@ -3200,7 +3200,7 @@
             },
             {
               "title": "authorizationMethodIndexes",
-              "$ref": "#/definitions/List$Int"
+              "$ref": "#/definitions/List<Int>"
             }
           ]
         }
@@ -3413,7 +3413,7 @@
             },
             {
               "title": "actionsForEachInput",
-              "$ref": "#/definitions/List$fluidtokens~1types~1dutch_auction~1DutchAuctionAction"
+              "$ref": "#/definitions/List<fluidtokens~1types~1dutch_auction~1DutchAuctionAction>"
             }
           ]
         }
@@ -3542,15 +3542,15 @@
             },
             {
               "title": "poolIds",
-              "$ref": "#/definitions/List$ByteArray"
+              "$ref": "#/definitions/List<ByteArray>"
             },
             {
               "title": "poolInputIndexes",
-              "$ref": "#/definitions/List$Int"
+              "$ref": "#/definitions/List<Int>"
             },
             {
               "title": "lenderBondInputIndexes",
-              "$ref": "#/definitions/List$Int"
+              "$ref": "#/definitions/List<Int>"
             }
           ]
         }
@@ -3614,27 +3614,27 @@
             },
             {
               "title": "lenderBondInputIndexes",
-              "$ref": "#/definitions/List$Int"
+              "$ref": "#/definitions/List<Int>"
             },
             {
               "title": "lenderBondAssetNames",
-              "$ref": "#/definitions/List$ByteArray"
+              "$ref": "#/definitions/List<ByteArray>"
             },
             {
               "title": "minswapRefInputIndexes",
-              "$ref": "#/definitions/List$Int"
+              "$ref": "#/definitions/List<Int>"
             },
             {
               "title": "minswapPoolAssetNames",
-              "$ref": "#/definitions/List$ByteArray"
+              "$ref": "#/definitions/List<ByteArray>"
             },
             {
               "title": "minswapOrderSuccessInlineDatumOutputIndexes",
-              "$ref": "#/definitions/List$Int"
+              "$ref": "#/definitions/List<Int>"
             },
             {
               "title": "minswapOrderRefundInlineDatumOutputIndexes",
-              "$ref": "#/definitions/List$Int"
+              "$ref": "#/definitions/List<Int>"
             }
           ]
         }
@@ -3654,19 +3654,19 @@
             },
             {
               "title": "lenderBondInputIndexes",
-              "$ref": "#/definitions/List$Int"
+              "$ref": "#/definitions/List<Int>"
             },
             {
               "title": "lenderBondAssetNames",
-              "$ref": "#/definitions/List$ByteArray"
+              "$ref": "#/definitions/List<ByteArray>"
             },
             {
               "title": "principalAndCollateralOracleRefInputIndexes",
-              "$ref": "#/definitions/List$Tuple$Int_Int"
+              "$ref": "#/definitions/List<Tuple<<Int,Int>>>"
             },
             {
               "title": "assetOutputIndexes",
-              "$ref": "#/definitions/List$Int"
+              "$ref": "#/definitions/List<Int>"
             }
           ]
         }
@@ -3686,23 +3686,23 @@
             },
             {
               "title": "lenderBondInputIndexes",
-              "$ref": "#/definitions/List$Int"
+              "$ref": "#/definitions/List<Int>"
             },
             {
               "title": "lenderBondAssetNames",
-              "$ref": "#/definitions/List$ByteArray"
+              "$ref": "#/definitions/List<ByteArray>"
             },
             {
               "title": "poolIds",
-              "$ref": "#/definitions/List$ByteArray"
+              "$ref": "#/definitions/List<ByteArray>"
             },
             {
               "title": "poolInputIndexes",
-              "$ref": "#/definitions/List$Int"
+              "$ref": "#/definitions/List<Int>"
             },
             {
               "title": "principalAndCollateralOracleRefInputIndexes",
-              "$ref": "#/definitions/List$Tuple$Int_Int"
+              "$ref": "#/definitions/List<Tuple<<Int,Int>>>"
             }
           ]
         }
@@ -3722,15 +3722,15 @@
             },
             {
               "title": "lenderBondInputIndexes",
-              "$ref": "#/definitions/List$Int"
+              "$ref": "#/definitions/List<Int>"
             },
             {
               "title": "lenderBondAssetNames",
-              "$ref": "#/definitions/List$ByteArray"
+              "$ref": "#/definitions/List<ByteArray>"
             },
             {
               "title": "assetOutputIndexes",
-              "$ref": "#/definitions/List$Int"
+              "$ref": "#/definitions/List<Int>"
             }
           ]
         }
@@ -3922,7 +3922,7 @@
             },
             {
               "title": "actionsForEachInput",
-              "$ref": "#/definitions/List$fluidtokens~1types~1loan~1ChangeCollateralData"
+              "$ref": "#/definitions/List<fluidtokens~1types~1loan~1ChangeCollateralData>"
             }
           ]
         }
@@ -3942,7 +3942,7 @@
             },
             {
               "title": "actionsForEachInput",
-              "$ref": "#/definitions/List$fluidtokens~1types~1loan~1ClaimData"
+              "$ref": "#/definitions/List<fluidtokens~1types~1loan~1ClaimData>"
             }
           ]
         }
@@ -3986,7 +3986,7 @@
             },
             {
               "title": "actionsForEachInput",
-              "$ref": "#/definitions/List$fluidtokens~1types~1loan~1RecastData"
+              "$ref": "#/definitions/List<fluidtokens~1types~1loan~1RecastData>"
             }
           ]
         }
@@ -4006,7 +4006,7 @@
             },
             {
               "title": "actionsForEachInput",
-              "$ref": "#/definitions/List$fluidtokens~1types~1loan~1RepayData"
+              "$ref": "#/definitions/List<fluidtokens~1types~1loan~1RepayData>"
             }
           ]
         }
@@ -4094,7 +4094,7 @@
             },
             {
               "title": "borrowerBondAssetNames",
-              "$ref": "#/definitions/List$ByteArray"
+              "$ref": "#/definitions/List<ByteArray>"
             }
           ]
         }
@@ -4107,7 +4107,7 @@
         "$ref": "#/definitions/cardano~1assets~1PolicyId"
       },
       "values": {
-        "$ref": "#/definitions/Pairs$cardano~1assets~1AssetName_Tuple$cardano~1assets~1PolicyId_Int"
+        "$ref": "#/definitions/Pairs<cardano~1assets~1AssetName,Tuple<<cardano~1assets~1PolicyId,Int>>>"
       }
     },
     "fluidtokens/types/oracle/CommonFeedData": {
@@ -4264,7 +4264,7 @@
             },
             {
               "title": "signatures",
-              "$ref": "#/definitions/List$fluidtokens~1types~1oracle~1Signature"
+              "$ref": "#/definitions/List<fluidtokens~1types~1oracle~1Signature>"
             }
           ]
         }
@@ -4277,7 +4277,7 @@
         "$ref": "#/definitions/cardano~1assets~1PolicyId"
       },
       "values": {
-        "$ref": "#/definitions/Pairs$cardano~1assets~1AssetName_Tuple$cardano~1assets~1PolicyId_Int_ByteArray"
+        "$ref": "#/definitions/Pairs<cardano~1assets~1AssetName,Tuple<<cardano~1assets~1PolicyId,Int,ByteArray>>>"
       }
     },
     "fluidtokens/types/oracle/Signature": {
@@ -4429,7 +4429,7 @@
             },
             {
               "title": "actionsForEachInput",
-              "$ref": "#/definitions/List$fluidtokens~1types~1pool~1EditData"
+              "$ref": "#/definitions/List<fluidtokens~1types~1pool~1EditData>"
             }
           ]
         }
@@ -4465,7 +4465,7 @@
             },
             {
               "title": "actionsForEachInput",
-              "$ref": "#/definitions/List$fluidtokens~1types~1pool~1BorrowData"
+              "$ref": "#/definitions/List<fluidtokens~1types~1pool~1BorrowData>"
             }
           ]
         }
@@ -4485,7 +4485,7 @@
             },
             {
               "title": "actionsForEachInput",
-              "$ref": "#/definitions/List$fluidtokens~1types~1pool~1CancelData"
+              "$ref": "#/definitions/List<fluidtokens~1types~1pool~1CancelData>"
             }
           ]
         }
@@ -4505,7 +4505,7 @@
             },
             {
               "title": "actionsForEachInput",
-              "$ref": "#/definitions/List$fluidtokens~1types~1pool~1CompoundData"
+              "$ref": "#/definitions/List<fluidtokens~1types~1pool~1CompoundData>"
             }
           ]
         }
@@ -4545,7 +4545,7 @@
             },
             {
               "title": "actionsForEachInput",
-              "$ref": "#/definitions/List$fluidtokens~1types~1pool~1SellLenderPositionData"
+              "$ref": "#/definitions/List<fluidtokens~1types~1pool~1SellLenderPositionData>"
             }
           ]
         }
@@ -4581,7 +4581,7 @@
           "fields": [
             {
               "title": "lenderBondsInfo",
-              "$ref": "#/definitions/List$fluidtokens~1types~1pool~1SellingLenderBondInfo"
+              "$ref": "#/definitions/List<fluidtokens~1types~1pool~1SellingLenderBondInfo>"
             },
             {
               "title": "poolId",
@@ -4649,7 +4649,7 @@
             },
             {
               "title": "poolManagerNFTAssetNames",
-              "$ref": "#/definitions/List$ByteArray"
+              "$ref": "#/definitions/List<ByteArray>"
             }
           ]
         }
@@ -4848,7 +4848,7 @@
             },
             {
               "title": "actionsForEachInput",
-              "$ref": "#/definitions/List$fluidtokens~1types~1request~1RequestAction"
+              "$ref": "#/definitions/List<fluidtokens~1types~1request~1RequestAction>"
             }
           ]
         }
