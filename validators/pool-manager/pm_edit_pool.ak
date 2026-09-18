@@ -67,6 +67,8 @@ validator poolManager(
       list.length(poolManagerInputs) == list.length(
         redeemer.poolManagerNFTAssetNames,
       ),
+      //No duplicate NFT names, so every input/output below is matched exactly once
+      list.unique(redeemer.poolManagerNFTAssetNames) == redeemer.poolManagerNFTAssetNames,
       //Pool edit action must be executed
       {
         let poolWithdrawRedeemer =
@@ -79,31 +81,51 @@ validator poolManager(
           _ -> False
         }
       },
-      utils.indexed_all(
-        poolManagerInputs,
-        fn(index, input) {
+      list.all(
+        redeemer.poolManagerNFTAssetNames,
+        fn(poolManagerNFTAssetName) {
+          //Match every collection by the NFT it holds, not by list position:
+          expect Some(input) =
+            list.find(
+              poolManagerInputs,
+              fn(mgrInput) {
+                quantity_of(
+                  mgrInput.output.value,
+                  poolManagerPolicyId,
+                  poolManagerNFTAssetName,
+                ) == 1
+              },
+            )
+
+          //Pool must have same NFT of pool manager
+          expect Some(_poolInput) =
+            list.find(
+              poolInputs,
+              fn(pInput) {
+                quantity_of(
+                  pInput.output.value,
+                  poolPolicyId,
+                  poolManagerNFTAssetName,
+                ) == 1
+              },
+            )
+
+          expect Some(poolManagerOutput) =
+            list.find(
+              poolManagerOutputs,
+              fn(mgrOutput) {
+                quantity_of(
+                  mgrOutput.value,
+                  poolManagerPolicyId,
+                  poolManagerNFTAssetName,
+                ) == 1
+              },
+            )
+
           expect InlineDatum(inputDatum) = input.output.datum
           expect PoolManagerDatum { poolOwnerAuth, .. } = inputDatum
 
-          let poolManagerNFTAssetName =
-            safe_list_at(redeemer.poolManagerNFTAssetNames, index)
-
-          let poolInput = safe_list_at(poolInputs, index)
-          let poolManagerOutput = safe_list_at(poolManagerOutputs, index)
-
           and {
-            //Pool must have same NFT of pool manager
-            quantity_of(
-              poolInput.output.value,
-              poolPolicyId,
-              poolManagerNFTAssetName,
-            ) == 1,
-            //Pool manager must have this NFT
-            quantity_of(
-              input.output.value,
-              poolManagerPolicyId,
-              poolManagerNFTAssetName,
-            ) == 1,
             //Output must be same as input
             builtin.equals_data(input.output, poolManagerOutput),
             //Authorize the pool owner to execute this action
