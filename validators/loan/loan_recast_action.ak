@@ -269,7 +269,9 @@ validator loan_recast_action(
                           builtin.cons_list(
                             builtin.i_data(principalAfterRecasting),
                             builtin.cons_list(
-                              builtin.i_data(datum.lendDate),
+                              builtin.i_data(
+                                datum.lendDate + datum.repaidInstallments * datum.installmentPeriod * constants.hour_to_millis,
+                              ),
                               builtin.cons_list(
                                 builtin.i_data(newRepaidInstallments),
                                 builtin.cons_list(
@@ -290,10 +292,16 @@ validator loan_recast_action(
                       )
                     }
                     PerpetualLoan { .. } -> {
-                      //Loan datum except the first 2 fields
+                      expect Finite(validFrom) =
+                        self.validity_range.lower_bound.bound_type
+                      let newLendDate = validFrom
+                      let newRepaidInstallments = 0
+                      //Loan datum except the first 4 fields
                       let datumUnchangedPart =
                         datum
                           |> builtin.unconstr_fields
+                          |> builtin.tail_list
+                          |> builtin.tail_list
                           |> builtin.tail_list
                           |> builtin.tail_list
 
@@ -304,7 +312,13 @@ validator loan_recast_action(
                           builtin.i_data(datum.doneRecasts + 1),
                           builtin.cons_list(
                             builtin.i_data(principalAfterRecasting),
-                            datumUnchangedPart,
+                            builtin.cons_list(
+                              builtin.i_data(newLendDate),
+                              builtin.cons_list(
+                                builtin.i_data(newRepaidInstallments),
+                                datumUnchangedPart,
+                              ),
+                            ),
                           ),
                         ),
                       )
