@@ -172,13 +172,17 @@ validator loan_repay_action(
                   ),
                   index,
                 )
-              validate_eventual_output_to_loan_for_repayment(
-                loanOutput,
-                datum,
-                input.output.value == loanOutput.value,
-                input.output.address.stake_credential,
-                loanSpendScriptHash,
-              )
+              and {
+                //Reject any partial payment if the loan has no installments
+                datum.installmentPeriod > 0,
+                validate_eventual_output_to_loan_for_repayment(
+                  loanOutput,
+                  datum,
+                  input.output.value == loanOutput.value,
+                  input.output.address.stake_credential,
+                  loanSpendScriptHash,
+                ),
+              }
             },
           },
         }

@@ -28,7 +28,6 @@ use smart_tokens/utils.{get_inputs_from_smart_credential} as st_utils
 validator pool_sell_lender_position_action(
   configNFTPolicyId: ByteArray,
   configNFTAssetName: ByteArray,
-  lenderManagerWithdrawScriptHash: ByteArray,
 ) {
   withdraw(
     redeemer: PoolSellLenderPositionActionWithdrawRedeemer,
