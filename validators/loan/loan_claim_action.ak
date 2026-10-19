@@ -30,6 +30,8 @@ use smart_tokens/utils.{
 validator loan_claim_action(
   configNFTPolicyId: ByteArray,
   configNFTAssetName: ByteArray,
+  assetManagerSpendScriptHash: ByteArray,
+  assetManagerWithdrawScriptHash: ByteArray,
 ) {
   withdraw(
     redeemer: LoanClaimActionWithdrawRedeemer,
@@ -84,14 +86,8 @@ validator loan_claim_action(
             self.validity_range.lower_bound.bound_type,
             self.validity_range.upper_bound.bound_type,
           )
-        let (lenderBondOutput, borrowerBondRefInput) =
-          (
-            utils.safe_list_at(self.outputs, inputAction.lenderBondOutputIndex),
-            utils.safe_list_at(
-              self.reference_inputs,
-              inputAction.borrowerBondRefInputIndex,
-            ),
-          )
+        let lenderBondOutput =
+          utils.safe_list_at(self.outputs, inputAction.lenderBondOutputIndex)
         let isPerpetualLoan =
           when datum.repaymentMode is {
             PerpetualLoan { .. } -> True
@@ -110,13 +106,6 @@ validator loan_claim_action(
         and {
           inputAction.liquidationMode == datum.liquidationMode,
           quantity_of(input.output.value, loanPolicyId, inputAction.loanId) == 1,
-          utils.efficient_quantity_of(
-            borrowerBondRefInput,
-            borrowerBondPolicyId,
-            inputAction.borrowerBondRefInputPolicyIdIndex,
-            inputAction.loanId,
-            inputAction.borrowerBondRefInputAssetNameIndex,
-          ) == 1,
           quantity_of(self.mint, loanPolicyId, inputAction.loanId) == -1,
           is_nft_in_output(
             lenderBondPolicyId,
@@ -125,50 +114,8 @@ validator loan_claim_action(
           ),
           when datum.liquidationMode is {
             NoLiquidationFullCollateralClaim -> isRepaymentLate
-            NoLiquidationDutchAuctionClaim -> {
-              let dutchAuctionOutput =
-                utils.safe_list_at(
-                  get_outputs_to_smart_credential(
-                    self.outputs,
-                    Script(dutchAuctionSpendScriptHash),
-                    Script(dutchAuctionWithdrawScriptHash),
-                    smartTokensSpendScriptHash,
-                  ),
-                  index,
-                )
-              let remainingDebt =
-                get_remaining_debt(
-                  datum.repaymentMode,
-                  rational.from_int(datum.principalAmount),
-                  interestRateAsRational,
-                  datum.totalInstallments,
-                  datum.repaidInstallments,
-                  datum.installmentPeriod,
-                  datum.initialGracePeriod,
-                  validFrom - datum.lendDate,
-                )
-              and {
-                isRepaymentLate,
-                validate_output_to_dutch_auction(
-                  input,
-                  dutchAuctionOutput,
-                  borrowerBondRefInput.output.address,
-                  lenderBondOutput.address,
-                  inputAction.lenderAuth,
-                  validTo,
-                  datum.principalAsset,
-                  datum.collateral,
-                  remainingDebt,
-                  dutchAuctionStartingIncreasePerMille,
-                  dutchAuctionLoweringAmount,
-                  dutchAuctionLoweringFrequency,
-                  dutchAuctionMinPriceToCancel,
-                  dutchAuctionSpendScriptHash,
-                  dutchAuctionWithdrawScriptHash,
-                  smartTokensSpendScriptHash,
-                ),
-              }
-            }
+            //This is a necessary fix after the critical findings. V3 MUST NEVER USE DUTCH AUCTIONS! 
+            NoLiquidationDutchAuctionClaim -> isRepaymentLate
 
             Liquidation { lTV, lTVDivider, partialLiquidationPenaltyPerMille } -> {
               let principalAmountAsRational =
@@ -223,7 +170,6 @@ validator loan_claim_action(
               let collateralAmount =
                 get_collateral_amount(input.output.value, datum.collateral)
               expect Some(ltvAsRational) = rational.new(lTV, lTVDivider)
-              let borrowerBondAddress = borrowerBondRefInput.output.address
               and {
                 if partialLiquidationPenaltyPerMille < 0 {
                   // Equity disabled: must be zero, and no borrower compensation.
@@ -258,8 +204,8 @@ validator loan_claim_action(
                           utils.safe_list_at(
                             get_outputs_to_smart_credential(
                               self.outputs,
-                              borrowerBondAddress.payment_credential,
-                              borrowerBondAddress.payment_credential,
+                              Script(assetManagerSpendScriptHash),
+                              Script(assetManagerWithdrawScriptHash),
                               smartTokensSpendScriptHash,
                             ),
                             index,

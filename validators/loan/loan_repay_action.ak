@@ -26,6 +26,8 @@ use smart_tokens/utils.{
 validator loan_repay_action(
   configNFTPolicyId: ByteArray,
   configNFTAssetName: ByteArray,
+  assetManagerSpendScriptHash: ByteArray,
+  assetManagerWithdrawScriptHash: ByteArray,
 ) {
   withdraw(
     redeemer: LoanRepayActionWithdrawRedeemer,
@@ -72,18 +74,12 @@ validator loan_repay_action(
         expect Finite(validTo) = self.validity_range.upper_bound.bound_type
         let borrowerBondOutput =
           safe_list_at(self.outputs, inputAction.borrowerBondOutputIndex)
-        let lenderBondRefInput =
-          safe_list_at(
-            self.reference_inputs,
-            inputAction.lenderBondRefInputIndex,
-          )
-        let lenderBondAddress = lenderBondRefInput.output.address
         let repaymentOutput =
           utils.safe_list_at(
             get_outputs_to_smart_credential(
               self.outputs,
-              lenderBondAddress.payment_credential,
-              lenderBondAddress.payment_credential,
+              Script(assetManagerSpendScriptHash),
+              Script(assetManagerWithdrawScriptHash),
               smartTokensSpendScriptHash,
             ),
             index,
@@ -134,13 +130,6 @@ validator loan_repay_action(
           }
         and {
           quantity_of(input.output.value, loanPolicyId, inputAction.loanId) == 1,
-          utils.efficient_quantity_of(
-            lenderBondRefInput,
-            lenderBondPolicyId,
-            inputAction.lenderBondRefInputPolicyIdIndex,
-            inputAction.loanId,
-            inputAction.lenderBondRefInputAssetNameIndex,
-          ) == 1,
           is_nft_in_output(
             borrowerBondPolicyId,
             inputAction.loanId,
