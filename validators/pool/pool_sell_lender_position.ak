@@ -3,6 +3,7 @@ use aiken/collection/dict
 use aiken/collection/list.{length}
 use aiken/crypto
 use aiken/interval.{Finite, Interval}
+use aiken/math.{min}
 use aiken/math/rational
 use cardano/address.{Address, Credential, Script}
 use cardano/assets.{Value, add, flatten, quantity_of}
@@ -12,6 +13,7 @@ use cardano/transaction.{
 use fluidtokens/constants
 use fluidtokens/finance.{
   get_needed_collateral_with_oracles, get_needed_collateral_without_oracles,
+  get_remaining_debt,
 }
 use fluidtokens/oracle.{retrieve_oracle_data}
 use fluidtokens/types/general.{
@@ -104,13 +106,19 @@ validator pool_sell_lender_position_action(
               expect loanDatum: LoanDatum = loanRefInputDatum
               expect InlineDatum(outputWithLenderTokenDatum) =
                 outputWithLenderToken.datum
-              //The value of the loan is the current borrowed principal
+              //The value of the loan is the min between the current borrowed principal and the remaining debt
+              //as the borrower could have paid in advance some future installments
               let loanValueInPrincipal =
                 get_loan_sellable_value(
                   loanDatum.principalAmount,
                   loanDatum.repaidInstallments,
                   loanDatum.totalInstallments,
                   loanDatum.repaymentMode,
+                  loanDatum.interestRate,
+                  loanDatum.installmentPeriod,
+                  loanDatum.initialGracePeriod,
+                  validTo,
+                  loanDatum.lendDate,
                 )
 
               let differentLenderBondAddressOrDatumHash =
@@ -369,6 +377,11 @@ fn get_loan_sellable_value(
   repaidInstallments: Int,
   totalInstallments: Int,
   repaymentMode: RepaymentMode,
+  interestRate: Int,
+  installmentPeriod: Int,
+  initialGracePeriod: Int,
+  validTo: Int,
+  lendDate: Int,
 ) {
   when repaymentMode is {
     InterestOnRemainingPrincipal { .. } -> {
@@ -399,6 +412,21 @@ fn get_loan_sellable_value(
         ),
       )
     }
-    PerpetualLoan { .. } -> principalAmount
+    PerpetualLoan { .. } -> {
+      expect Some(interestRateAsRational) = rational.new(interestRate, 10000)
+      min(
+        principalAmount,
+        get_remaining_debt(
+          repaymentMode,
+          rational.from_int(principalAmount),
+          interestRateAsRational,
+          totalInstallments,
+          repaidInstallments,
+          installmentPeriod,
+          initialGracePeriod,
+          validTo - lendDate,
+        ),
+      )
+    }
   }
 }
