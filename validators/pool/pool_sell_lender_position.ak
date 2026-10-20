@@ -117,7 +117,7 @@ validator pool_sell_lender_position_action(
                   loanDatum.interestRate,
                   loanDatum.installmentPeriod,
                   loanDatum.initialGracePeriod,
-                  validTo,
+                  validFrom,
                   loanDatum.lendDate,
                 )
 
@@ -380,7 +380,7 @@ fn get_loan_sellable_value(
   interestRate: Int,
   installmentPeriod: Int,
   initialGracePeriod: Int,
-  validTo: Int,
+  valuationTime: Int,
   lendDate: Int,
 ) {
   when repaymentMode is {
@@ -412,8 +412,14 @@ fn get_loan_sellable_value(
         ),
       )
     }
-    PerpetualLoan { .. } -> {
+    PerpetualLoan { apyIncreaseLinearCoefficient, .. } -> {
       expect Some(interestRateAsRational) = rational.new(interestRate, 10000)
+      expect and {
+          principalAmount >= 0,
+          interestRate >= 0,
+          apyIncreaseLinearCoefficient >= 0,
+          valuationTime >= lendDate,
+        }
       min(
         principalAmount,
         get_remaining_debt(
@@ -424,7 +430,7 @@ fn get_loan_sellable_value(
           repaidInstallments,
           installmentPeriod,
           initialGracePeriod,
-          validTo - lendDate,
+          valuationTime - lendDate,
         ),
       )
     }
