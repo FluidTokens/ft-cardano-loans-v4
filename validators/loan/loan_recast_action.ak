@@ -1,6 +1,7 @@
 use aiken/builtin
 use aiken/collection/list.{length}
 use aiken/interval.{Finite, Interval}
+use aiken/math.{max}
 use aiken/math/rational
 use cardano/address.{Address, Credential, Script}
 use cardano/assets.{ada_policy_id, flatten, quantity_of}
@@ -75,14 +76,6 @@ validator loan_recast_action(
             ),
             index,
           )
-        let periodToLatestPaidInstallment =
-          datum.repaidInstallments * datum.installmentPeriod
-        let timePassedSinceLastRepaidInstallment =
-          validTo - (
-            datum.lendDate + (
-              datum.initialGracePeriod + periodToLatestPaidInstallment
-            ) * constants.hour_to_millis
-          )
 
         let isPerpetualLoanWithNoInstallments =
           when datum.repaymentMode is {
@@ -94,8 +87,13 @@ validator loan_recast_action(
           if isPerpetualLoanWithNoInstallments {
             0
           } else {
-            timePassedSinceLastRepaidInstallment / (
-              datum.installmentPeriod * constants.hour_to_millis
+            max(
+              0,
+              (
+                validTo - (
+                  datum.lendDate + datum.initialGracePeriod * constants.hour_to_millis
+                )
+              ) / ( datum.installmentPeriod * constants.hour_to_millis ),
             )
           }
 
