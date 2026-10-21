@@ -1,6 +1,6 @@
-use aiken/math.{pow}
+use aiken/math.{max, pow}
 use aiken/math/rational.{Rational}
-use cardano/assets.{Value, quantity_of}
+use cardano/assets.{Value, ada_policy_id, quantity_of}
 use fluidtokens/constants
 use fluidtokens/types/general.{
   CollateralAsset, InterestOnRemainingPrincipal, PerpetualLoan,
@@ -441,4 +441,37 @@ pub fn convertFromAToBWithOracles(
   rational.ceil(
     get_lovelace_amount_in_token_currency(aAmountInLovelace, bOraclePriceFeed),
   )
+}
+
+//Fee the compounding bot keeps from the liquidity added to a pool.
+//ADA pools always pay at least min_compounding_fee_lovelace, even with 0 per mille.
+//Token pools need no floor: the bot already keeps the min-ADA of each compounded utxo.
+pub fn get_compounding_fee(
+  addedLiquidity: Int,
+  compoudingFeePerMille: Int,
+  principalPolicyId: ByteArray,
+) -> Int {
+  expect compoudingFeePerMille >= 0
+  let perMilleFee = addedLiquidity * compoudingFeePerMille / 1000
+  if principalPolicyId == ada_policy_id {
+    max(perMilleFee, constants.min_compounding_fee_lovelace)
+  } else {
+    perMilleFee
+  }
+}
+
+test compounding_fee_zero_per_mille_ada_pays_floor() {
+  get_compounding_fee(50_000_000, 0, ada_policy_id) == 1_000_000
+}
+
+test compounding_fee_per_mille_above_floor() {
+  get_compounding_fee(500_000_000, 5, ada_policy_id) == 2_500_000
+}
+
+test compounding_fee_token_pool_has_no_floor() {
+  get_compounding_fee(50_000_000, 0, #"aa") == 0
+}
+
+test compounding_fee_negative_per_mille_fails() fail {
+  get_compounding_fee(50_000_000, -1, ada_policy_id) == 0
 }
