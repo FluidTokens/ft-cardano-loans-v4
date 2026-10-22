@@ -247,7 +247,9 @@ validator loan_recast_action(
                           builtin.cons_list(
                             builtin.i_data(principalAfterRecasting),
                             builtin.cons_list(
-                              builtin.i_data(datum.lendDate),
+                              builtin.i_data(
+                                datum.lendDate + datum.repaidInstallments * datum.installmentPeriod * constants.hour_to_millis,
+                              ),
                               builtin.cons_list(
                                 builtin.i_data(newRepaidInstallments),
                                 builtin.cons_list(
