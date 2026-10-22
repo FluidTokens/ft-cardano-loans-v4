@@ -40,3 +40,6 @@ pub const max_orcfax_tolerance = 25200000
 pub const hour_to_millis = 3600000
 
 pub const no_oracle_token_asset = Asset { policyId: "NONE", assetName: "NONE" }
+
+//Minimum fee a bot earns when compounding into an ADA pool (1 ADA)
+pub const min_compounding_fee_lovelace = 1000000

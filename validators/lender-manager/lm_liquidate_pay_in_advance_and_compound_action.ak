@@ -327,7 +327,12 @@ validator actionValidator(
           expect InlineDatum(oldPoolDatum) = poolInput.output.datum
           expect PoolDatum { commonData, .. } = oldPoolDatum
           let principal = commonData.principalAsset
-          let compoundingFee = addedLiquidity * compoudingFeePerMille / 1000
+          let compoundingFee =
+            finance.get_compounding_fee(
+              addedLiquidity,
+              compoudingFeePerMille,
+              principal.policyId,
+            )
           //Value must be same except for the added principal
           let correctOutputValue =
             if principal.policyId == ada_policy_id {

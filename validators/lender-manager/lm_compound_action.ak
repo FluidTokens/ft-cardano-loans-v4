@@ -4,6 +4,7 @@ use aiken/collection/list
 use cardano/address.{Address, Credential, Script}
 use cardano/assets.{ada_policy_id, add, flatten, quantity_of, without_lovelace}
 use cardano/transaction.{InlineDatum, Input, Output, Transaction}
+use fluidtokens/finance
 use fluidtokens/types/asset_manager.{AssetManagerDatumWithToken} as r
 use fluidtokens/types/general.{Asset}
 use fluidtokens/types/lender_manager.{
@@ -184,7 +185,12 @@ validator actionValidator(
           expect InlineDatum(oldPoolDatum) = poolInput.output.datum
           expect PoolDatum { commonData, .. } = oldPoolDatum
           let principal = commonData.principalAsset
-          let compoundingFee = addedLiquidity * compoudingFeePerMille / 1000
+          let compoundingFee =
+            finance.get_compounding_fee(
+              addedLiquidity,
+              compoudingFeePerMille,
+              principal.policyId,
+            )
           //Value must be same except for the added principal
           let correctOutputValue =
             if principal.policyId == ada_policy_id {
