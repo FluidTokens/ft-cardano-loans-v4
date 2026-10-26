@@ -103,6 +103,16 @@ validator loan_repay_action(
           if isPerpetualLoan && (
             inputAction.isFinalRepayment || datum.installmentPeriod == 0
           ) {
+            let eventualLateRepaymentFee =
+              if isRepaymentLate {
+                if datum.penaltyFeeForLateRepayment > 0 {
+                  datum.penaltyFeeForLateRepayment
+                } else {
+                  0
+                }
+              } else {
+                0
+              }
             get_remaining_debt(
               datum.repaymentMode,
               rational.from_int(datum.principalAmount),
@@ -112,7 +122,7 @@ validator loan_repay_action(
               datum.installmentPeriod,
               datum.initialGracePeriod,
               validTo - datum.lendDate,
-            )
+            ) + eventualLateRepaymentFee
           } else {
             get_next_installment_amount(
               datum.repaymentMode,
