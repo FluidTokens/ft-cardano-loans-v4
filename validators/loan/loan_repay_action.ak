@@ -3,7 +3,9 @@ use aiken/collection/list.{length}
 use aiken/interval.{Finite, Interval}
 use aiken/math/rational
 use cardano/address.{Address, Credential, Script, StakeCredential}
-use cardano/assets.{ada_policy_id, flatten, quantity_of}
+use cardano/assets.{
+  ada_policy_id, flatten, lovelace_of, quantity_of, without_lovelace,
+}
 use cardano/transaction.{
   InlineDatum, Input, Output, OutputReference, Transaction,
 }
@@ -178,7 +180,14 @@ validator loan_repay_action(
                 validate_eventual_output_to_loan_for_repayment(
                   loanOutput,
                   datum,
-                  input.output.value == loanOutput.value,
+                  and {
+                    without_lovelace(input.output.value) == without_lovelace(
+                      loanOutput.value,
+                    ),
+                    lovelace_of(loanOutput.value) >= lovelace_of(
+                      input.output.value,
+                    ),
+                  },
                   input.output.address.stake_credential,
                   loanSpendScriptHash,
                 ),
@@ -252,7 +261,7 @@ fn validate_repayment_output(
 fn validate_eventual_output_to_loan_for_repayment(
   loanOutput: Output,
   datum: LoanDatum,
-  outputValueSameOfInputValue: Bool,
+  correctOutputValue: Bool,
   prevStakeCredential: Option<StakeCredential>,
   loanSpendScriptHash: ByteArray,
 ) {
@@ -299,6 +308,6 @@ fn validate_eventual_output_to_loan_for_repayment(
     correctDestination,
     isDatumCorrect,
     //loanNFT is already included in the value
-    outputValueSameOfInputValue,
+    correctOutputValue,
   }
 }
