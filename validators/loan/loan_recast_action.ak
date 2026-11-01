@@ -4,7 +4,9 @@ use aiken/interval.{Finite, Interval}
 use aiken/math.{max}
 use aiken/math/rational
 use cardano/address.{Address, Credential, Script}
-use cardano/assets.{ada_policy_id, flatten, quantity_of}
+use cardano/assets.{
+  ada_policy_id, flatten, lovelace_of, quantity_of, without_lovelace,
+}
 use cardano/transaction.{
   InlineDatum, Input, Output, OutputReference, Transaction,
 }
@@ -337,7 +339,14 @@ validator loan_recast_action(
                   correctDestination,
                   builtin.equals_data(outputDatum, newLoanExpectedDatum),
                   //loanNFT is already included in the value
-                  input.output.value == loanOutput.value,
+                  and {
+                    without_lovelace(input.output.value) == without_lovelace(
+                      loanOutput.value,
+                    ),
+                    lovelace_of(loanOutput.value) >= lovelace_of(
+                      input.output.value,
+                    ),
+                  },
                 }
               },
             },
