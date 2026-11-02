@@ -1,10 +1,10 @@
 use aiken/builtin
 use aiken/collection/list.{length}
 use aiken/interval.{Finite, Interval}
-use aiken/math.{max, pow}
+use aiken/math.{max}
 use aiken/math/rational
 use cardano/address.{Address, Credential, Script}
-use cardano/assets.{flatten, quantity_of}
+use cardano/assets.{flatten, lovelace_of, quantity_of, without_lovelace}
 use cardano/transaction.{
   InlineDatum, Input, Output, OutputReference, Transaction,
 }
@@ -122,17 +122,42 @@ validator loan_recast_action(
                   datum.penaltyFeeForLateRepayment,
                 )
 
-              let interestPerInstallment =
-                datum.interestRate / datum.totalInstallments
+              expect Some(interestPerInstallmentAsRational) =
+                rational.div(
+                  interestRateAsRational,
+                  rational.from_int(datum.totalInstallments),
+                )
 
-              let r = 1 + interestPerInstallment
-
-              let rToTheT = pow(r, datum.repaidInstallments)
+              let r =
+                rational.add(
+                  rational.from_int(1),
+                  interestPerInstallmentAsRational,
+                )
 
               let remainingPrincipalToPay =
-                datum.principalAmount * rToTheT - a * ( rToTheT - 1 ) / (
-                  r - 1
-                )
+                if rational.compare(r, rational.from_int(0)) == Greater {
+                  expect Some(rToTheT) =
+                    rational.pow(r, datum.repaidInstallments)
+
+                  let denominator = rational.sub(r, rational.from_int(1))
+                  let aTerm =
+                    rational.mul(
+                      rational.from_int(a),
+                      rational.sub(rToTheT, rational.from_int(1)),
+                    )
+                  expect Some(aTermDivided) = rational.div(aTerm, denominator)
+                  let result =
+                    rational.sub(
+                      rational.mul(
+                        rational.from_int(datum.principalAmount),
+                        rToTheT,
+                      ),
+                      aTermDivided,
+                    )
+                  rational.ceil(result)
+                } else {
+                  datum.principalAmount - datum.repaidInstallments * a
+                }
 
               remainingPrincipalToPay - inputAction.amountPaid
             }
@@ -315,7 +340,14 @@ validator loan_recast_action(
                   correctDestination,
                   builtin.equals_data(outputDatum, newLoanExpectedDatum),
                   //loanNFT is already included in the value
-                  input.output.value == loanOutput.value,
+                  and {
+                    without_lovelace(input.output.value) == without_lovelace(
+                      loanOutput.value,
+                    ),
+                    lovelace_of(loanOutput.value) >= lovelace_of(
+                      input.output.value,
+                    ),
+                  },
                 }
               },
             },

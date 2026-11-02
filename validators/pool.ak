@@ -392,7 +392,7 @@ fn bonds_sent_to_both_parties(
     crypto.blake2b_256(builtin.serialise_data(outputWithLenderTokenDatum)) == lenderBondInlineDatumHash,
     quantity_of(mintedValue, borrowerBondPolicyId, bondId) == 1,
     quantity_of(outputWithLenderToken.value, lenderBondPolicyId, bondId) == 1,
-    length(flatten(outputWithLenderToken.value)) <= 5,
+    length(flatten(outputWithLenderToken.value)) == 2,
   }
 }
 

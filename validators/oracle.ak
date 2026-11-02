@@ -44,8 +44,16 @@ validator oracle(
   }
 
   withdraw(redeemer: OracleRedeemer, _credential: Credential, self: Transaction) {
+    //Ensure signatures are unique
     let unique_signatures = list.unique(redeemer.signatures)
     expect unique_signatures == redeemer.signatures
+
+    //Ensure signers are unique by forcing a different key position of the verification_keys list
+    //(supposing the oracle has been correctly built with unique elements in verification_keys)
+    let redeemer_key_positions =
+      list.map(unique_signatures, fn(redem) { redem.key_position })
+    let unique_key_positions = list.unique(redeemer_key_positions)
+    expect unique_key_positions == redeemer_key_positions
 
     when redeemer.data is {
       PriceDataCharlie {
